@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
+
 class DemoIsolateWidget extends StatefulWidget {
   const DemoIsolateWidget({Key? key}) : super(key: key);
 
@@ -11,12 +13,6 @@ class DemoIsolateWidget extends StatefulWidget {
 class _DemoIsolateWidgetState extends State<DemoIsolateWidget> {
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    doSomething().then((value) => print(value));
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -25,20 +21,27 @@ class _DemoIsolateWidgetState extends State<DemoIsolateWidget> {
       body: Container(
         child: Column(
           children: [
-            CircularProgressIndicator()
+            CircularProgressIndicator(),
+            ElevatedButton(onPressed: () {
+              doSomething().then((value) => print(value));
+            }, child: Text("Make heavy task"))
           ],
         ),
       ),
     );
   }
 
-  Future<int> doSomething() {
-    Completer<int> completer = Completer();
+  static void makeHeavyTask(SendPort port) {
     int total = 0;
-    for(var i = 0; i < 10000000000; i++) {
+    for (var i = 0; i < 1000000; i++) {
       total += i;
     }
-    completer.complete(total);
-    return completer.future;
+    port.send(total);
+  }
+
+  Future<dynamic> doSomething() async {
+    ReceivePort port = ReceivePort();
+    var isolate = await Isolate.spawn(makeHeavyTask, port.sendPort);
+    return port.first;
   }
 }
