@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DemoIsolateWidget extends StatefulWidget {
@@ -11,6 +11,7 @@ class DemoIsolateWidget extends StatefulWidget {
 }
 
 class _DemoIsolateWidgetState extends State<DemoIsolateWidget> {
+
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +32,31 @@ class _DemoIsolateWidgetState extends State<DemoIsolateWidget> {
     );
   }
 
-  static void makeHeavyTask(SendPort port) {
-    int total = 0;
+  // Spaw
+  // static void makeHeavyTask(SendPort port) {
+  //   int total = 0;
+  //   for (var i = 0; i < 1000000; i++) {
+  //     total += i;
+  //   }
+  //   port.send(total);
+  // }
+  //
+  // Future<dynamic> doSomething() async {
+  //   ReceivePort port = ReceivePort();
+  //   var isolate = await Isolate.spawn(makeHeavyTask, port.sendPort);
+  //   return port.first;
+  // }
+
+  // Compute
+  static int makeHeavyTask(int number) {
+    var total = number;
     for (var i = 0; i < 1000000; i++) {
       total += i;
     }
-    port.send(total);
+    return total;
   }
 
-  Future<dynamic> doSomething() async {
-    ReceivePort port = ReceivePort();
-    var isolate = await Isolate.spawn(makeHeavyTask, port.sendPort);
-    return port.first;
+  Future doSomething()  {
+    return compute(makeHeavyTask, 0);
   }
 }
